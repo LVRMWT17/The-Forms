@@ -1,0 +1,91 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  margin-left: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: calc(10px + 2vmin);
+  color: rgb(46, 37, 37);
+}
+.container {
+  flex: 1;
+  padding: 20px;
+}
+.content {
+  height: 400px;
+}
+.toolbar {
+  position: relative;
+  float: right;
+  width:100px;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+.set {
+  float: right;
+  width:80px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.Search {
+  margin-top: 5px;
+  margin-left: 140px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: rgb(222, 217, 247);
+  width: 800px;
+  padding: 5px;
+}
+
+.SearchInput {
+  border: none;
+  outline: none;
+  height: 10px;
+  padding: 10px;
+  flex: 1;
+  border-radius:5px;
+}
+
+.settings-popup {
+  position: absolute;
+  width: 250px;
+  top: 70px;
+  right: 70px;
+  background: rgb(253, 249, 255);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 10px;
+  display: block;
+}
+
+.settings-popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-popup li {
+  margin: 5px 0;
+}
+
+.settings-popup a {
+  text-decoration: none;
+  color: hsl(0, 0%, 20%);
+}
+
+.settings-popup a:hover {
+  text-decoration: underline;
+}
