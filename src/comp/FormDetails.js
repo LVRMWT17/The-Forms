@@ -1,0 +1,167 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
+const FormDetails = () => {
+    const { id } = useParams();
+    const [form, setForm] = useState();
+    const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const userId = localStorage.getItem('userId');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const [accessList, setAccessList] = useState([]);
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const formResponse = await fetch(`https://pond-catkin-supermarket.glitch.me/api/formDetails/${id}`);
+                const formData = await formResponse.json();
+                
+                if (typeof formData.tags === 'string') {
+                    try {
+                        formData.tags = JSON.parse(formData.tags);
+                    } catch (e) {
+                        console.error('Ошибка при парсинге tags:', e);
+                        formData.tags = [];
+                    }
+                }
+                setForm(formData);
+                const questionsResponse = await fetch(`https://pond-catkin-supermarket.glitch.me/api/questions?formId=${id}`);
+                const questionsData = await questionsResponse.json();
+                setQuestions(questionsData);
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [id]);
+
+    useEffect(() => {
+        const fetchAccess = async () => {
+            try {
+                const response = await fetch(`https://pond-catkin-supermarket.glitch.me/api/getUserAccess?formId=${id}&userId=${userId}`);
+                const data = await response.json();
+                console.log('Полученные данные:', data);
+                setAccessList(data);
+            } catch (error) {
+                console.error('Ошибка при получении данных пользователя и формы:', error);
+            }
+        };
+        if (userId) {
+            fetchAccess();
+        }
+    }, [id, userId]);
+
+    const goBack = () => {
+        navigate(-1);
+    };
+    if (loading) {
+        return <div>{t("Загрузка")}</div>;
+    }
+
+    if (!form) {
+        return <div>{t("Форма не найдена")}</div>;
+    }
+console.log(accessList)
+
+    return (
+        <div className='forms'>
+            <h1>{form.form_title}</h1>
+            <img
+                src={form.image_url}
+                alt={form.form_title}
+                className='form-image'
+            />
+            <div>
+            <div dangerouslySetInnerHTML={{ __html: form.form_description }} />
+</div>
+            <div>
+                {Array.isArray(form?.tags) && form.tags.map((tag, index) => (
+                    <span key={index} style={{ marginRight: '5px', padding: '5px', backgroundColor: '#e0e0e0', borderRadius: '3px', color: 'black' }}>
+                        {tag}
+                    </span>
+                ))}
+            </div>
+            <p style={{ fontSize: '20px', marginBottom: '30px' }}>{form.theme}</p>
+
+            <div>
+                <h1>{t("Вопросы")}</h1>
+                {questions.map((question) => {
+                    const { question_title, question_type, options } = question;
+                    let parsedOptions = [];
+                    try {
+                        parsedOptions = JSON.parse(options);
+                    } catch (error) {
+                        console.error('Ошибка при парсинге опций:', error);
+                    }
+                    if (Array.isArray(parsedOptions) && parsedOptions.length === 1 && Array.isArray(parsedOptions[0])) {
+                        parsedOptions = parsedOptions[0];
+                    }
+                    return (
+                        <div key={question.id} className='question-container'>
+                            <div>
+                                <h3>{question_title}</h3>
+                                {question_type === 'checkbox' ? (
+                                    <div style={{ flexDirection: 'column', display: 'flex', marginRight: '200px' }}>
+                                        {Array.isArray(parsedOptions) && parsedOptions.length > 0 ? (
+                                            parsedOptions.map((option, idx) => (
+                                                <label key={idx}>
+                                                    <input type="checkbox" value={option} disabled />
+                                                    {option}
+                                                </label>
+                                            ))
+                                        ) : (
+                                            <p>Нет доступных опций</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <input
+                                        type={question_type === 'positiveInteger' ? 'number' : 'text'}
+                                        defaultValue={parsedOptions[0] || ''}
+                                        readOnly
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            <div>
+    {form.author_id && form.author_id.toString() !== userId && (
+        form.is_public === 1 || 
+        accessList.some(access => access.user_id && access.user_id.toString() === userId)
+    ) && (
+        <Link to={`/answer/${form.id}`}>
+            <button>
+                {t("Ответить на форму")}
+            </button>
+        </Link>
+    )}
+</div>
+{(form.author_id && form.author_id.toString() === userId) || isAdmin ? (
+    <Link to={`/EditForm/${form.id}`}>
+        <button>{t("Редактировать")}</button>
+    </Link>
+) : null}
+
+{(form.author_id && form.author_id.toString() === userId) || isAdmin ? (
+    <div>
+        <Link to="/Responses">
+            <button>{t("Ответы на форму")}</button>
+        </Link>
+    </div>
+) : null}
+
+            <div>
+                <button onClick={goBack}>{t("Назад")}</button>
+            </div>
+        </div>
+    );
+};
+
+export default FormDetails;

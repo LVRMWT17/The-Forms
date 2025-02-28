@@ -1,0 +1,5 @@
+body.light {
+  background-color: #ecf0f8;
+  color: black;
+  transition: background-color 0.3s, color 0.3s;
+}
